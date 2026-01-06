@@ -82,10 +82,10 @@ Recommended approach:
 
 1. Read the README to understand *why* each resource exists
 2. Review `main.yaml` to see how those ideas are expressed declaratively
-3. Apply the manifest to a GKE cluster
-4. Inspect Kubernetes resources
-5. Observe related cloud control-plane resources
-6. Observe cloud **compute, storage, and networking** artifacts created indirectly by Kubernetes
+3. Create and inspect a Kubernetes cluster
+4. Apply the manifest
+5. Observe Kubernetes resources
+6. Observe related cloud control-plane resources
 7. Deliberately break things and reason about what fails and why
 8. Tear everything down and verify cleanup across layers
 
@@ -143,6 +143,93 @@ across **all layers**, not just Kubernetes.
 
 ---
 
+## A Simple Threat Reasoning Approach
+
+This exercise is not a formal threat model.
+It is a **way of orienting your thinking** when working with Kubernetes as an
+abstraction layer over cloud infrastructure.
+
+The goal is to reason clearly about **defaults, failure modes, and attacker
+opportunity**, even when you do not yet know every detail of the system.
+
+---
+
+### Defaults and Failure Modes
+
+A useful starting question in any security discussion is:
+
+> *When something is missing or misconfigured, does the system fail open or fail closed?*
+
+Examples you will encounter in this exercise:
+
+- **Kubernetes RBAC**: default **closed**
+- **Cloud IAM**: default **closed**
+- **Kubernetes networking**: default **open**
+- **NetworkPolicy**: once applied, default becomes **closed**
+
+---
+
+### Reasoning from a Foothold
+
+Assume a simple starting condition:
+
+> *An attacker has execution inside a container.*
+
+From there, reasoning can unfold in a predictable sequence.
+
+---
+
+### 1. Identity
+
+What identity does the workload already have?
+
+Consider:
+- ServiceAccount tokens
+- Mounted credentials or secrets
+- Cloud workload identity
+
+---
+
+### 2. Network
+
+What can the workload reach?
+
+Consider:
+- other pods and namespaces
+- cluster services
+- external endpoints
+
+---
+
+### 3. Data
+
+What data is accessible?
+
+Consider:
+- persistent volumes
+- databases or object storage
+- data that outlives the pod
+
+---
+
+### 4. Escape and Expansion
+
+Can containment be broken?
+
+Consider:
+- privileged containers
+- node access
+- cloud API access
+
+---
+
+### Visibility as a Multiplier
+
+Logs, metrics, traces, and higher-level CNAPP platforms do not prevent compromise.
+They change how quickly and clearly activity can be understood.
+
+---
+
 ## What `main.yaml` Contains
 
 The single manifest intentionally includes:
@@ -191,6 +278,22 @@ Configure kubectl:
 
 ```bash
 gcloud container clusters get-credentials sec-dojo-cluster
+```
+
+Inspect the kubeconfig created by this command:
+
+```bash
+ls ~/.kube
+cat ~/.kube/config
+```
+
+Verify cluster connectivity and explore the API surface:
+
+```bash
+kubectl cluster-info
+kubectl api-resources
+kubectl get namespaces
+kubectl get nodes
 ```
 
 ---
@@ -271,14 +374,13 @@ Reason about:
 
 ## Break and Reason
 
-Introduce failure or loosen controls:
+Introduce failure deliberately:
+- remove the NetworkPolicy
+- change the Service type
+- delete and recreate pods
+- delete the namespace but not the cluster
 
-- Remove the `NetworkPolicy`
-- Change the `Service` type
-- Delete and recreate pods
-- Delete the namespace but not the cluster
-
-Observe **Kubernetes behavior** and **cloud-side consequences**.
+Observe both Kubernetes behavior and cloud-side effects.
 
 ---
 
@@ -358,17 +460,13 @@ Lingering networking resources represent:
 
 ---
 
-## Reflection: What Required Human Verification?
+## Reflection
 
 After teardown, reflect:
 
 - Which layers cleaned up automatically?
-- Which required explicit verification?
-- Which resources were easiest to forget?
-- Where does Kubernetes abstraction *help* — and where does it hide risk?
-
-The goal is not perfect cleanup.
-The goal is **clear reasoning about responsibility and residual risk**.
+- Which required human verification?
+- Where does Kubernetes abstraction hide risk?
 
 ---
 
@@ -377,8 +475,7 @@ The goal is **clear reasoning about responsibility and residual risk**.
 This repository is intentionally minimal and exploratory.
 
 It is not a best-practices guide or production reference.
-It exists as a **shared reasoning surface** for exploring where Kubernetes
-responsibility ends and cloud responsibility begins.
+It exists as a **shared reasoning surface**.
 
 If you notice inaccuracies, missing considerations, or alternative ways to
 reason about these boundaries, you’re invited to:
@@ -387,4 +484,4 @@ reason about these boundaries, you’re invited to:
 - submit a pull request
 - or reach out directly to the maintainers and contributors
 
-Thoughtful discussion, disagreement, and real-world counterexamples are welcome.
+Thoughtful discussion and real-world counterexamples are welcome.
