@@ -374,30 +374,17 @@ The goal is **clear reasoning about responsibility and residual risk**.
 
 ## Contributing & Discussion
 
-This repository is intentionally **minimal, incomplete, and opinionated**.
+This repository is intentionally minimal and exploratory.
 
-It is not meant to represent “the right way” to secure Kubernetes or cloud
-infrastructure. Instead, it exists as a **shared reasoning surface** — a small,
-concrete system that makes boundaries, assumptions, and failure modes visible.
+It is not a best-practices guide or production reference.
+It exists as a **shared reasoning surface** for exploring where Kubernetes
+responsibility ends and cloud responsibility begins.
 
-If you notice:
+If you notice inaccuracies, missing considerations, or alternative ways to
+reason about these boundaries, you’re invited to:
 
-- inaccuracies or oversimplifications
-- missing edge cases or important caveats
-- alternative interpretations of responsibility boundaries
-- places where your real-world experience contradicts the narrative
+- open an issue
+- submit a pull request
+- or reach out directly to the maintainers and contributors
 
-You are encouraged to engage.
-
-Useful contributions include:
-- opening issues with questions or counterexamples
-- submitting pull requests that clarify or deepen the reasoning
-- adding small experiments or variations that reveal different failure modes
-- sharing stories where these abstractions broke down in practice
-
-Thoughtful disagreement is welcome.
-So is uncertainty.
-
-The goal is not consensus or completeness, but **clearer thinking about where
-security responsibility actually lives — and where it does not**.
-
+Thoughtful discussion, disagreement, and real-world counterexamples are welcome.
