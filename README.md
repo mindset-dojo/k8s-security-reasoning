@@ -372,6 +372,148 @@ Reason about:
 
 ---
 
+## Visibility & Reachability Exercises
+
+This section grounds the threat reasoning model in **direct observation**.
+
+Rather than assuming behavior, you will:
+- inspect logs
+- execute inside running containers
+- observe different network access paths
+- compare control-plane vs data-plane traffic
+- see how node-level visibility differs from pod-level visibility
+
+These exercises intentionally mirror the question:
+
+> *“If I had execution here, what could I see?”*
+
+---
+
+### 1. Pod-Level Visibility (Logs and Exec)
+
+Inspect application logs from the running NGINX pod:
+
+```bash
+kubectl logs deploy/nginx -n demo
+```
+
+Then execute inside the container:
+
+```bash
+kubectl exec -it deploy/nginx -n demo -- /bin/sh
+```
+
+Notice:
+- execution is real, not theoretical
+- logs are scoped to the workload
+- identity is inherited automatically by the pod
+
+This is the concrete form of “attacker has execution.”
+
+---
+
+### 2. In-Cluster Network Reachability (BusyBox)
+
+Create a temporary pod to test in-cluster access:
+
+```bash
+kubectl run bb --image=busybox -n demo -it --restart=Never -- sh
+```
+
+From inside the BusyBox shell:
+
+```sh
+wget -qO- http://nginx.demo.svc.cluster.local
+```
+
+This tests **data-plane networking** and NetworkPolicy behavior.
+
+Reason about:
+- what is reachable by default
+- what changes when NetworkPolicy is modified
+- how lateral movement might begin
+
+---
+
+### 3. Control-Plane Mediated Access (Port Forward)
+
+From your local environment, forward a port to the Service:
+
+```bash
+kubectl port-forward svc/nginx -n demo 8080:80
+```
+
+Then:
+
+```bash
+curl http://localhost:8080
+```
+
+Notice:
+- access succeeds even if NetworkPolicy would block pod-to-pod ingress
+- kubectl is acting as a privileged control-plane proxy
+
+This highlights the difference between **control-plane access**
+and **data-plane access**.
+
+---
+
+### 4. Public Access Path (Cloud Load Balancer)
+
+If the Service is of type `LoadBalancer`, retrieve the external IP:
+
+```bash
+kubectl get svc nginx -n demo
+```
+
+Once an `EXTERNAL-IP` is assigned:
+
+```bash
+curl http://<EXTERNAL-IP>
+```
+
+Compare:
+- port-forward traffic path
+- in-cluster traffic path
+- public ingress via cloud-managed load balancer
+
+Each path crosses **different boundaries**
+and is governed by different controls.
+
+---
+
+## Node-Level Visibility with a DaemonSet (Advanced)
+
+A DaemonSet runs **one pod per node**.
+
+This exercise is not about exploitation.
+It is about **making the node boundary visible**.
+
+Inspect DaemonSet pods:
+
+```bash
+kubectl get pods -n demo -l app=node-logger
+```
+
+Exec into one of the DaemonSet pods:
+
+```bash
+kubectl exec -it <node-logger-pod> -n demo -- sh
+```
+
+Inspect the log file written on the node filesystem:
+
+```sh
+cat /var/log/node-logger/heartbeat.log
+```
+
+Reason about:
+- how pod visibility differs from node visibility
+- what persists beyond individual pod lifecycles
+- why DaemonSets are powerful — and potentially risky
+
+This is a concrete example of **crossing abstraction boundaries**.
+
 ## Break and Reason
 
 Introduce failure deliberately:
