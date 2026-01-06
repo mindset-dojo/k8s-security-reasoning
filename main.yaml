@@ -80,6 +80,7 @@ metadata:
   name: nginx
   namespace: demo
 spec:
+  type: LoadBalancer
   selector:
     app: nginx
   ports:
