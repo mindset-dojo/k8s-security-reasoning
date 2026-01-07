@@ -268,8 +268,24 @@ gcloud config set compute/region us-central1
 
 ### 2. Create a GKE cluster
 
+Create dedicated VPC:
+
 ```bash
-gcloud container clusters create sec-dojo-cluster --num-nodes=2 --enable-network-policy --region us-central1
+gcloud compute networks subnets create sec-dojo-subnet \
+  --network sec-dojo-vpc \
+  --range 10.10.0.0/16 \
+  --region us-central1
+```
+
+Create the cluster within the new VPC:
+
+```bash
+gcloud container clusters create sec-dojo-cluster \
+  --num-nodes=2 \
+  --enable-network-policy \
+  --network sec-dojo-vpc \
+  --subnetwork sec-dojo-subnet \
+  --region us-central1
 ```
 
 Configure kubectl:
@@ -358,9 +374,9 @@ Reason about:
 Kubernetes networking intent becomes cloud networking primitives.
 
 ```bash
-gcloud compute firewall-rules list
-gcloud compute forwarding-rules list
-gcloud compute routes list
+gcloud compute firewall-rules list --filter="network:sec-dojo-vpc"
+gcloud compute forwarding-rules list --filter="network:sec-dojo-vpc"
+gcloud compute routes list --filter="network:sec-dojo-vpc"
 ```
 
 Reason about:
@@ -545,8 +561,16 @@ kubectl delete namespace demo
 
 ### Step 2: Delete the GKE cluster
 
+Delete cluster:
+
 ```bash
 gcloud container clusters delete sec-dojo-cluster --region us-central1
+```
+
+Delete corresponding VPC:
+
+```bash
+gcloud compute networks delete sec-dojo-vpc
 ```
 
 ---
@@ -588,9 +612,9 @@ Lingering disks represent:
 Ensure no networking artifacts remain:
 
 ```bash
-gcloud compute firewall-rules list
-gcloud compute forwarding-rules list
-gcloud compute routes list
+gcloud compute firewall-rules list --filter="network:sec-dojo-vpc"
+gcloud compute forwarding-rules list --filter="network:sec-dojo-vpc"
+gcloud compute routes list --filter="network:sec-dojo-vpc"
 ```
 
 Lingering networking resources represent:
