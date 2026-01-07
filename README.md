@@ -377,7 +377,6 @@ Kubernetes networking intent becomes cloud networking primitives.
 
 ```bash
 gcloud compute firewall-rules list --filter="network:sec-dojo-vpc"
-gcloud compute forwarding-rules list --filter="network:sec-dojo-vpc"
 gcloud compute routes list --filter="network:sec-dojo-vpc"
 ```
 
@@ -572,6 +571,14 @@ gcloud container clusters delete sec-dojo-cluster --region us-central1
 Delete corresponding VPC:
 
 ```bash
+for RULE in $(gcloud compute firewall-rules list \
+  --filter="network:sec-dojo-vpc" \
+  --format="value(name)"); do
+  gcloud compute firewall-rules delete "$RULE"
+done
+
+gcloud compute networks subnets delete sec-dojo-subnet --region us-central1
+
 gcloud compute networks delete sec-dojo-vpc
 ```
 
@@ -615,7 +622,6 @@ Ensure no networking artifacts remain:
 
 ```bash
 gcloud compute firewall-rules list --filter="network:sec-dojo-vpc"
-gcloud compute forwarding-rules list --filter="network:sec-dojo-vpc"
 gcloud compute routes list --filter="network:sec-dojo-vpc"
 ```
 
