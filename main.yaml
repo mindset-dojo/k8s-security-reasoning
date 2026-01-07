@@ -100,7 +100,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: nginx-allow-pod-to-pod
+  name: nginx-allow-in-cluster
   namespace: demo
 spec:
   podSelector:
