@@ -269,13 +269,13 @@ gcloud config set compute/region us-central1
 ### 2. Create a GKE cluster
 
 ```bash
-gcloud container clusters create sec-dojo-cluster --num-nodes=2 --region us-central1 --enable-network-policy 
+gcloud container clusters create sec-dojo-cluster --num-nodes=2 --enable-network-policy --region us-central1
 ```
 
 Configure kubectl:
 
 ```bash
-gcloud container clusters get-credentials sec-dojo-cluster
+gcloud container clusters get-credentials sec-dojo-cluster --region us-central1
 ```
 
 Inspect the kubeconfig created by this command:
