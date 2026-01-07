@@ -271,6 +271,8 @@ gcloud config set compute/region us-central1
 Create dedicated VPC:
 
 ```bash
+gcloud compute networks create sec-dojo-vpc --subnet-mode=custom
+
 gcloud compute networks subnets create sec-dojo-subnet \
   --network sec-dojo-vpc \
   --range 10.10.0.0/16 \
