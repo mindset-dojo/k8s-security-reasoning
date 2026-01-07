@@ -48,6 +48,17 @@ spec:
         app: nginx
     spec:
       serviceAccountName: demo-sa
+      initContainers:
+      - name: init-content
+        image: busybox
+        command:
+        - sh
+        - -c
+        - |
+          echo "nginx alive from $(hostname)" > /data/index.html
+        volumeMounts:
+        - name: data
+          mountPath: /data
       containers:
       - name: nginx
         image: nginx:stable
